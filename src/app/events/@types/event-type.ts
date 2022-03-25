@@ -1,0 +1,4 @@
+export enum EventType {
+  TIME_CONSTRAINED_EVENT = 'FESTIVAL',
+  ALL_TIME_EVENT = 'ALL_TIME_EVENT',
+}
