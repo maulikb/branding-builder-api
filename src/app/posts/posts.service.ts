@@ -1,4 +1,4 @@
-import { HttpStatus, Injectable, Post } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
@@ -10,12 +10,14 @@ import { EventsService } from '../events/events.service';
 import { EventType } from '../events/@types/event-type';
 import { CustomHTTPException } from '../common/errors/custom-http.exception';
 import { CustomErrorCodes } from '../common/@types/custom-error-codes';
-import { Types } from 'mongoose';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { PostEventType } from './@types/posts-event-type';
 @Injectable()
 export class PostsService {
   constructor(
     @InjectModel(EventPost.name) private postModel: Model<EventPostDocument>,
     private readonly configService: ConfigService,
+    private eventEmitter: EventEmitter2,
     private eventService: EventsService,
   ) {}
 
@@ -52,8 +54,8 @@ export class PostsService {
     // if{ event.type === EventType.TIME_CONSTRAINED_EVENT
   }
 
-  findAll() {
-    return `This action returns all posts`;
+  findAllPosts() {
+    return this.postModel.find().exec();
   }
 
   findOne(id: number) {
@@ -69,7 +71,8 @@ export class PostsService {
     return updatePost;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} post`;
+  async deletePost(id: string) {
+    this.eventEmitter.emit(PostEventType.DELETE_POST);
+    this.postModel.remove(id);
   }
 }

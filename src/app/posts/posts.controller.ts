@@ -14,9 +14,13 @@ import { CreatePostDto, CreatePostReqSwaggerDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { ApiBody, ApiTags } from '@nestjs/swagger';
 
-@Controller('posts')
+@Controller('api/posts')
 export class PostsController {
   constructor(private readonly postsService: PostsService) {}
+
+  /***
+   * Function to register new post
+   */
   @Post()
   @ApiTags('Posts')
   @ApiBody({ type: CreatePostReqSwaggerDto })
@@ -28,12 +32,17 @@ export class PostsController {
     return this.postsService.createPost(createPostDto, eventName);
   }
 
+  /***
+   * Function to get all posts
+   */
   @Get()
-  findAll() {
-    return this.postsService.findAll();
+  @ApiTags('Posts')
+  getAllPoss() {
+    return this.postsService.findAllPosts();
   }
 
   @Get(':id')
+  @ApiTags('Posts')
   findOne(@Param('id') id: string) {
     return this.postsService.findOne(+id);
   }
@@ -42,9 +51,12 @@ export class PostsController {
   updatePost(@Param('id') id: string, @Body() updatePostDto: UpdatePostDto) {
     return this.postsService.update(id, updatePostDto);
   }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.postsService.remove(+id);
+  /***
+   * Function to delete post with removing reference in event
+   */
+  @Delete(':POST_ID')
+  @ApiTags('Posts')
+  deletePost(@Param('POST_ID') id: string) {
+    return this.postsService.deletePost(id);
   }
 }

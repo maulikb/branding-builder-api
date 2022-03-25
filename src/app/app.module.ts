@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
-import { BusinessModule } from './business/business.module';
 import { IEnvironmentVariables } from './common/@types/IEnvironemntVariable';
 import { configuration } from './configuration/config';
 import { EventsModule } from './events/events.module';
@@ -9,6 +8,7 @@ import { HealthController } from './health/health.controller';
 import { TerminusModule } from '@nestjs/terminus';
 import { MediaModule } from './media/media.module';
 import { APP_INTERCEPTOR } from '@nestjs/core';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { LoggingInterceptor } from './common/interceptors/logger.interceptor';
 import { CommonModule } from './common/common.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
@@ -32,11 +32,11 @@ const publicFolderPath = '../../public/temp';
         useUnifiedTopology: true,
       }),
     }),
+    EventEmitterModule.forRoot(),
     ServeStaticModule.forRoot({
       rootPath: path.join(__dirname, publicFolderPath),
       serveRoot: '/media/',
     }),
-    BusinessModule,
     EventsModule,
     CommonModule,
     TerminusModule,

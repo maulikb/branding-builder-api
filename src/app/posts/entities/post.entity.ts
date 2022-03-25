@@ -1,14 +1,15 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
-  IsEnum,
   IsNotEmpty,
   IsOptional,
   IsString,
   Matches,
+  ValidateNested,
 } from 'class-validator';
 import { COLOR_VALIDATION_RULE } from 'src/app/common/constants';
-import { PostAspectRatio } from '../@types/post-aspect-ratio';
+import { PostSize } from '../@types/post-size';
 
 export type EventPostDocument = EventPost & Document;
 const options = {
@@ -47,10 +48,11 @@ export class EventPost {
   @ApiProperty()
   supportedLanguages: string[];
 
-  @Prop()
-  @IsEnum(PostAspectRatio)
+  @Prop({ type: PostSize })
+  @ValidateNested()
   @ApiProperty()
-  postSize: PostAspectRatio;
+  @Type(() => PostSize)
+  postSize: PostSize;
 
   @Prop({ type: Object })
   @IsOptional()

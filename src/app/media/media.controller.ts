@@ -7,13 +7,11 @@ import {
   HttpStatus,
   Param,
   Post,
-  Req,
   Res,
   UploadedFile,
-  UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
-import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
+import { FileInterceptor } from '@nestjs/platform-express';
 import path, { join } from 'path';
 import multer from 'multer';
 import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
@@ -21,7 +19,6 @@ import { CustomHTTPException } from '../common/errors/custom-http.exception';
 import { ConfigService } from '@nestjs/config';
 import { CustomErrorCodes } from '../common/@types/custom-error-codes';
 import { environment } from 'src/environments/';
-import { UPLOADING_FILE_LIMIT } from '../common/constants';
 import { Observable, of } from 'rxjs';
 
 const multerTemp = '../../../multer-store';

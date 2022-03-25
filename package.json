@@ -34,6 +34,7 @@
     "@nestjs/common": "^8.4.0",
     "@nestjs/config": "^1.2.0",
     "@nestjs/core": "^8.0.0",
+    "@nestjs/event-emitter": "^1.1.0",
     "@nestjs/mongoose": "^9.0.2",
     "@nestjs/platform-express": "^8.0.0",
     "@nestjs/serve-static": "^2.2.2",
@@ -44,6 +45,7 @@
     "class-transformer": "^0.5.1",
     "class-validator": "^0.13.2",
     "dotenv": "^16.0.0",
+    "fs": "^0.0.1-security",
     "jimp": "^0.16.1",
     "migrate": "^1.7.0",
     "migrate-mongo": "^8.2.3",
@@ -56,6 +58,7 @@
     "rxjs": "^7.2.0",
     "social-links": "^1.4.5",
     "swagger-ui-express": "^4.3.0",
+    "ts-md5": "^1.2.11",
     "winston": "^3.6.0"
   },
   "devDependencies": {

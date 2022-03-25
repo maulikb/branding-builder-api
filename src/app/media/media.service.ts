@@ -31,7 +31,6 @@ export class MediaService {
     const post = await this.postService.update(postId, {
       backgroundImage: file.filename,
     });
-
     return post;
   }
 

@@ -74,7 +74,7 @@ export class Event {
   @Prop({ type: Object })
   @IsOptional()
   @ApiProperty()
-  location?: {
+  originLocation?: {
     country: string[];
     state: string[];
   };

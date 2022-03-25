@@ -1,26 +1,91 @@
-import { Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import Jimp from 'jimp/*';
+import fs from 'fs';
 import { environment } from 'src/environments';
 import { CropType } from './@types/image-processing-types';
+import { JIMP_MAX_FILE_SIZE_FOR_PROCESSING_IN_MB } from './constants';
+import { FilePathService } from './file-path.service';
 
+@Injectable()
 export class ImageProcessingService {
   private maxImageSize = environment.maxImageSize;
+  private minImageQualityLimit = environment.minImageQualityLimit;
 
-  constructor(private logger: Logger) {}
-  private async processImage(
+  constructor(
+    private logger: Logger,
+    private filePathService: FilePathService,
+  ) {}
+
+  public async processImageAndCache(
     filePath: string,
-    imageWidth: number,
-    imageHeight: number,
     crop: CropType,
     quality: number,
   ) {
+    let fileSizeInMegabytes = 0;
+    try {
+      const fsStat = fs.statSync(filePath);
+      this.logger.debug(
+        `ImageProcessingService.processImage() fsStat: ${JSON.stringify(
+          fsStat,
+        )}`,
+      );
+      fileSizeInMegabytes = fsStat.size / (1024 * 1024);
+    } catch (err) {
+      this.logger.error(
+        `ImageProcessingService.processImage() error: ${JSON.stringify(err)}`,
+      );
+    }
+    if (fileSizeInMegabytes > JIMP_MAX_FILE_SIZE_FOR_PROCESSING_IN_MB) {
+      this.logger.error(
+        `ImageProcessingService.processImage() fileSizeInMegabytes: ${fileSizeInMegabytes} is greater than ${JIMP_MAX_FILE_SIZE_FOR_PROCESSING_IN_MB}`,
+      );
+      return filePath;
+    }
+    const cachedFile = this.filePathService.getCacheImagePath(
+      filePath,
+      quality,
+    );
+    this.logger.debug(
+      `ImageProcessingService.processImage() cacheFilePath: ${cachedFile}`,
+    );
+
+    if (fs.existsSync(cachedFile)) {
+      return cachedFile;
+    }
+
+    if (quality < this.minImageQualityLimit) {
+      quality = this.minImageQualityLimit;
+    }
+    try {
+      if (!fs.existsSync(filePath)) {
+        const error = new Error('File not found');
+        throw error;
+      }
+      const image = await this.processImage(filePath, crop, quality);
+      await image.writeAsync(cachedFile);
+      return cachedFile;
+    } catch (error) {
+      this.logger.error(error);
+      this.logger.debug(
+        `ImageProcessingService.processImage() error: ${JSON.stringify(error)}`,
+      );
+    }
+  }
+  private async processImage(
+    filePath: string,
+    crop: CropType,
+    quality: number,
+    imageWidth?: number,
+    imageHeight?: number,
+  ) {
     const image = await Jimp.read(filePath);
     image.quality(quality);
-    if (imageWidth === 0 || isNaN(imageWidth)) {
+
+    if (imageWidth === 0 || isNaN(imageWidth) || imageWidth === undefined) {
       imageWidth = image.getWidth();
     }
 
-    if (imageHeight === 0 || isNaN(imageHeight)) {
+    if (imageHeight === 0 || isNaN(imageHeight) || imageHeight === undefined) {
       imageHeight = image.getHeight();
     }
 

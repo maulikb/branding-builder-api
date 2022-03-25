@@ -8,6 +8,9 @@ import { EventType } from './@types/event-type';
 import { CreateQuoteEventDto } from './dto/create-quote-event.dto';
 import { QuoteCategories } from './@types/quote-categories';
 import { UpdateQuoteEventDto } from './dto/update-quote.dto';
+import { Types } from 'mongoose';
+import { EventDto } from './dto/event.dto';
+import { CommonUpdateEventDto } from './dto/common-even-update.dto';
 
 @Injectable()
 export class EventsService {
@@ -75,6 +78,23 @@ export class EventsService {
       },
     ]);
     return upcomingEvents;
+  }
+
+  async findEventsByPostId(postID: Types.ObjectId) {
+    const eventsContainsPosts = await this.eventModel.aggregate([
+      {
+        $match: {
+          posts: postID,
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          posts: 1,
+        },
+      },
+    ]);
+    return eventsContainsPosts;
   }
 
   /***
@@ -158,6 +178,16 @@ export class EventsService {
     );
     return updateQuoteEvent;
   }
+
+  commonEventUpdate(id: string, updateCommontEventDto: CommonUpdateEventDto) {
+    const updatedEvent = this.eventModel.findByIdAndUpdate(
+      id,
+      { $set: updateCommontEventDto },
+      { new: true },
+    );
+    return updatedEvent;
+  }
+
   remove(id: number) {
     return `This action removes a #${id} event`;
   }

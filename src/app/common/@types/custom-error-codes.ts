@@ -5,4 +5,5 @@ export enum CustomErrorCodes {
   INVALID_FILE_TYPE = 'file/invalid-file-type',
   CANNOT_FIND_EVENT = 'event/cannot-find-event',
   POST_ALREADY_REGISTERED = 'post/post-already-registerd',
+  CANNOT_FIND_POST = 'post/cannot-find-post',
 }

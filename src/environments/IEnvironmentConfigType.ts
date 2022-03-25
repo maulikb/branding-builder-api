@@ -5,6 +5,8 @@ export interface IEnvironmentConfigType {
   fileMaxSizeInBytes: number;
   cacheImageFolderPath: string;
   maxImageSize: number;
+  maxImageSizeForWideScreen: string;
+  maxImageSizeForSquaredScreen: string;
   minImageQualityLimit: number;
   standardImageQuality: number;
   standardImageBlurRatio: number;
