@@ -6,38 +6,55 @@ import {
   Param,
   HttpStatus,
   UseInterceptors,
+  Query,
 } from '@nestjs/common';
 import { EventsService } from './events.service';
-import { CreateEventDto } from './dto/create-event.dto';
+import {
+  CreateEventDto,
+  CreateEventReqSwagger,
+  CreateEventResSwagger,
+} from './dto/create-event.dto';
 import { Event } from './entity/event.entity';
-import { CreateQuoteEventDto } from './dto/create-quote-event.dto';
+import {
+  CreateQuoteEventDto,
+  CreateQuoteEventReqSwaggerDto,
+  CreateQuoteEventResSwaggerDto,
+} from './dto/create-quote-event.dto';
 import { EventType } from './@types/event-type';
 import { QuoteCategories } from './@types/quote-categories';
-import { ApiBody, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBody,
+  ApiConsumes,
+  ApiOperation,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { CommonApiResponses } from '../common/decorators/common-swagger.decorator';
-import { GetQuoteSwaggerResponseDto } from './dto/get-quote-swagger-response.dto';
 import { LoggingInterceptor } from '../common/interceptors/logger.interceptor';
-import { GetEventSwaggerResponse } from './dto/get-event-swagger-response.dto';
+import { LocationFilterType } from './@types/location-filter-type';
 
 /***
  * Event Handlers
  */
 
-@Controller('api/')
+@Controller({ path: 'api/', version: '1' })
 @UseInterceptors(LoggingInterceptor)
 export class EventsController {
   constructor(private readonly eventsService: EventsService) {}
 
   /***
-   * Regsiter New Event With Unique Name
+   * Register New Event With Unique Name
    */
   @Post('register-events')
   @ApiTags('Events')
-  @ApiBody({ type: CreateEventDto })
-  @ApiResponse({ type: CreateEventDto, status: HttpStatus.OK })
+  @ApiBody({ type: CreateEventReqSwagger })
+  @ApiConsumes('application/json')
+  @ApiOperation({ summary: 'Register New Event' })
+  @ApiResponse({ type: CreateEventResSwagger, status: HttpStatus.OK })
   @CommonApiResponses()
-  async registerEvent(@Body() CreateEventDto: CreateEventDto) {
-    const event = await this.eventsService.createEvent(CreateEventDto);
+  async registerEvent(@Body() createEventDto: CreateEventDto) {
+    const event = await this.eventsService.createEvent(createEventDto);
     return event;
   }
   /***
@@ -45,10 +62,42 @@ export class EventsController {
    */
   @Get('today-events')
   @ApiTags('Events')
-  @ApiResponse({ type: GetEventSwaggerResponse, status: HttpStatus.OK })
+  @ApiOperation({ summary: 'Get Today Events' })
+  @ApiQuery({
+    name: 'Country',
+    required: false,
+    type: String,
+  })
+  @ApiQuery({
+    name: 'State',
+    required: false,
+    type: String,
+  })
+  @ApiResponse({ type: CreateEventResSwagger, status: HttpStatus.OK })
   @CommonApiResponses()
-  async getTodayEvents(): Promise<Event[]> {
-    return await this.eventsService.findTodayEvents();
+  async getTodayEvents(
+    @Query('Country') originCountry: string,
+    @Query('State') originState: string,
+  ): Promise<Event[]> {
+    if (originState !== undefined && originCountry !== undefined) {
+      return await this.eventsService.findTodayEvents(
+        LocationFilterType.COUNTRY_AND_STATE,
+        originCountry + '_' + originState,
+      );
+    }
+    if (originState !== undefined) {
+      return await this.eventsService.findTodayEvents(
+        LocationFilterType.STATE,
+        originState,
+      );
+    }
+    if (originCountry !== undefined) {
+      return await this.eventsService.findTodayEvents(
+        LocationFilterType.COUNTRY,
+        originCountry,
+      );
+    }
+    return await this.eventsService.findTodayEvents(LocationFilterType.GLOBAL);
   }
 
   /***
@@ -56,10 +105,44 @@ export class EventsController {
    */
   @Get('upcoming-events')
   @ApiTags('Events')
-  @ApiResponse({ type: GetEventSwaggerResponse, status: HttpStatus.OK })
+  @ApiOperation({ summary: 'Get Upcoming Events' })
+  @ApiQuery({
+    name: 'Country',
+    required: false,
+    type: String,
+  })
+  @ApiQuery({
+    name: 'State',
+    required: false,
+    type: String,
+  })
+  @ApiResponse({ type: CreateEventResSwagger, status: HttpStatus.OK })
   @CommonApiResponses()
-  async getUpcomingEvents(): Promise<Event[]> {
-    return await this.eventsService.findUpcomingEvents();
+  async getUpcomingEvents(
+    @Query('Country') originCountry: string,
+    @Query('State') originState: string,
+  ): Promise<Event[]> {
+    if (originState !== undefined && originCountry !== undefined) {
+      return await this.eventsService.findUpcomingEvents(
+        LocationFilterType.COUNTRY_AND_STATE,
+        originCountry + '_' + originState,
+      );
+    }
+    if (originState !== undefined) {
+      return await this.eventsService.findUpcomingEvents(
+        LocationFilterType.STATE,
+        originState,
+      );
+    }
+    if (originCountry !== undefined) {
+      return await this.eventsService.findUpcomingEvents(
+        LocationFilterType.COUNTRY,
+        originCountry,
+      );
+    }
+    return await this.eventsService.findUpcomingEvents(
+      LocationFilterType.GLOBAL,
+    );
   }
 
   /***
@@ -67,7 +150,8 @@ export class EventsController {
    */
   @Get('events')
   @ApiTags('Events')
-  @ApiResponse({ type: GetEventSwaggerResponse, status: HttpStatus.OK })
+  @ApiOperation({ summary: 'Get All Events' })
+  @ApiResponse({ type: CreateEventResSwagger, status: HttpStatus.OK })
   @CommonApiResponses()
   async getAllEvents(): Promise<Event[]> {
     return await this.eventsService.findEventByType(
@@ -76,12 +160,13 @@ export class EventsController {
   }
 
   /***
-   * Reister New Quote With Unique Name
+   * Register New Quote With Unique Name
    */
   @Post('register-quote')
   @ApiTags('Quotes')
-  @ApiBody({ type: CreateQuoteEventDto })
-  @ApiResponse({ type: CreateQuoteEventDto, status: HttpStatus.OK })
+  @ApiBody({ type: CreateQuoteEventReqSwaggerDto })
+  @ApiOperation({ summary: 'Reister New Quote With Unique Name' })
+  @ApiResponse({ type: CreateQuoteEventResSwaggerDto, status: HttpStatus.OK })
   @CommonApiResponses()
   async registerQuote(@Body() createQuoteEventDto: CreateQuoteEventDto) {
     const event = await this.eventsService.createQuote(createQuoteEventDto);
@@ -93,7 +178,8 @@ export class EventsController {
    */
   @Get('quotes/:QUOTE_CATEGORY')
   @ApiTags('Quotes')
-  @ApiResponse({ type: GetQuoteSwaggerResponseDto, status: HttpStatus.OK })
+  @ApiOperation({ summary: ' Get Quote By Category' })
+  @ApiResponse({ type: CreateQuoteEventResSwaggerDto, status: HttpStatus.OK })
   @CommonApiResponses()
   async getQuoteByCatogories(
     @Param('QUOTE_CATEGORY') quoteCategory: QuoteCategories,
@@ -106,7 +192,8 @@ export class EventsController {
    */
   @Get('quotes')
   @ApiTags('Quotes')
-  @ApiResponse({ type: GetQuoteSwaggerResponseDto, status: HttpStatus.OK })
+  @ApiOperation({ summary: 'Get All Quotes' })
+  @ApiResponse({ type: CreateQuoteEventResSwaggerDto, status: HttpStatus.OK })
   @CommonApiResponses()
   async getAllQuotes(): Promise<Event[]> {
     return await this.eventsService.findEventByType(EventType.ALL_TIME_EVENT);

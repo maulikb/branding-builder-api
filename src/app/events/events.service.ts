@@ -9,8 +9,8 @@ import { CreateQuoteEventDto } from './dto/create-quote-event.dto';
 import { QuoteCategories } from './@types/quote-categories';
 import { UpdateQuoteEventDto } from './dto/update-quote.dto';
 import { Types } from 'mongoose';
-import { EventDto } from './dto/event.dto';
 import { CommonUpdateEventDto } from './dto/common-even-update.dto';
+import { LocationFilterType } from './@types/location-filter-type';
 
 @Injectable()
 export class EventsService {
@@ -63,21 +63,89 @@ export class EventsService {
   /***
    * Function to get today events
    */
-  async findUpcomingEvents(): Promise<Event[]> {
-    const upcomingEvents = this.eventModel.aggregate([
-      {
-        $match: { type: EventType.TIME_CONSTRAINED_EVENT },
-      },
-      {
-        $match: {
-          $and: [
-            { startDate: { $gt: new Date() } },
-            { endDate: { $gt: new Date() } },
-          ],
-        },
-      },
-    ]);
-    return upcomingEvents;
+  async findUpcomingEvents(
+    locationFilterType: LocationFilterType,
+    locationFilterValue?: string,
+  ): Promise<Event[]> {
+    switch (locationFilterType) {
+      case LocationFilterType.GLOBAL:
+        return this.eventModel.aggregate([
+          {
+            $match: { type: EventType.TIME_CONSTRAINED_EVENT },
+          },
+          {
+            $match: {
+              $and: [
+                { startDate: { $gt: new Date() } },
+                { endDate: { $gt: new Date() } },
+              ],
+            },
+          },
+        ]);
+      case LocationFilterType.COUNTRY_AND_STATE:
+        const countryAndState = locationFilterValue.split('_');
+        const country = countryAndState[0];
+        const state = countryAndState[1];
+        return this.eventModel.aggregate([
+          {
+            $match: { type: EventType.TIME_CONSTRAINED_EVENT },
+          },
+          {
+            $match: {
+              $and: [
+                { startDate: { $gt: new Date() } },
+                { endDate: { $gt: new Date() } },
+              ],
+            },
+          },
+          {
+            $match: {
+              $and: [
+                { 'originLocation.country': country },
+                { 'originLocation.state': state },
+              ],
+            },
+          },
+        ]);
+      case LocationFilterType.COUNTRY:
+        return this.eventModel.aggregate([
+          {
+            $match: { type: EventType.TIME_CONSTRAINED_EVENT },
+          },
+          {
+            $match: {
+              $and: [
+                { startDate: { $gt: new Date() } },
+                { endDate: { $gt: new Date() } },
+              ],
+            },
+          },
+          {
+            $match: {
+              'originLocation.country': locationFilterValue,
+            },
+          },
+        ]);
+      case LocationFilterType.STATE:
+        return this.eventModel.aggregate([
+          {
+            $match: { type: EventType.TIME_CONSTRAINED_EVENT },
+          },
+          {
+            $match: {
+              $and: [
+                { startDate: { $gt: new Date() } },
+                { endDate: { $gt: new Date() } },
+              ],
+            },
+          },
+          {
+            $match: {
+              'originLocation.state': locationFilterValue,
+            },
+          },
+        ]);
+    }
   }
 
   async findEventsByPostId(postID: Types.ObjectId) {
@@ -101,21 +169,177 @@ export class EventsService {
    * Function to get all upcoming events
    */
 
-  async findTodayEvents(): Promise<Event[]> {
-    const todayEvents = this.eventModel.aggregate([
-      {
-        $match: { type: EventType.TIME_CONSTRAINED_EVENT },
-      },
-      {
-        $match: {
-          $and: [
-            { startDate: { $lte: new Date() } },
-            { endDate: { $gt: new Date() } },
-          ],
-        },
-      },
-    ]);
-    return todayEvents;
+  async findTodayEvents(
+    locationFilterType: LocationFilterType,
+    locationFilterValue?: string,
+  ): Promise<Event[]> {
+    switch (locationFilterType) {
+      case LocationFilterType.GLOBAL:
+        return this.eventModel.aggregate([
+          {
+            $match: { type: EventType.TIME_CONSTRAINED_EVENT },
+          },
+          {
+            $match: {
+              $and: [
+                { startDate: { $lte: new Date() } },
+                { endDate: { $gt: new Date() } },
+              ],
+            },
+          },
+        ]);
+      case LocationFilterType.COUNTRY_AND_STATE:
+        const countryAndState = locationFilterValue.split('_');
+        const country = countryAndState[0];
+        const state = countryAndState[1];
+        return this.eventModel.aggregate([
+          {
+            $match: { type: EventType.TIME_CONSTRAINED_EVENT },
+          },
+          {
+            $match: {
+              $and: [
+                { startDate: { $lte: new Date() } },
+                { endDate: { $gt: new Date() } },
+              ],
+            },
+          },
+          {
+            $match: {
+              $and: [
+                { 'originLocation.country': country },
+                { 'originLocation.state': state },
+              ],
+            },
+          },
+        ]);
+      case LocationFilterType.COUNTRY:
+        return this.eventModel.aggregate([
+          {
+            $match: { type: EventType.TIME_CONSTRAINED_EVENT },
+          },
+          {
+            $match: {
+              $and: [
+                { startDate: { $lte: new Date() } },
+                { endDate: { $gt: new Date() } },
+              ],
+            },
+          },
+          {
+            $match: {
+              'originLocation.country': locationFilterValue,
+            },
+          },
+        ]);
+      case LocationFilterType.STATE:
+        return this.eventModel.aggregate([
+          {
+            $match: { type: EventType.TIME_CONSTRAINED_EVENT },
+          },
+          {
+            $match: {
+              $and: [
+                { startDate: { $lte: new Date() } },
+                { endDate: { $gt: new Date() } },
+              ],
+            },
+          },
+          {
+            $match: {
+              'originLocation.state': locationFilterValue,
+            },
+          },
+        ]);
+    }
+  }
+
+  /***
+   * Function to filter events by country and state value
+   */
+  async findEventByLocation(
+    locationFilterType: LocationFilterType,
+    locationFilterValue?: string,
+  ): Promise<Event[]> {
+    switch (locationFilterType) {
+      case LocationFilterType.GLOBAL:
+        return this.eventModel.aggregate([
+          {
+            $match: { type: EventType.TIME_CONSTRAINED_EVENT },
+          },
+          {
+            $match: {
+              $and: [
+                { startDate: { $lte: new Date() } },
+                { endDate: { $gt: new Date() } },
+              ],
+            },
+          },
+        ]);
+      case LocationFilterType.COUNTRY_AND_STATE:
+        const countryAndState = locationFilterValue.split('_');
+        const country = countryAndState[0];
+        const state = countryAndState[1];
+        return this.eventModel.aggregate([
+          {
+            $match: { type: EventType.TIME_CONSTRAINED_EVENT },
+          },
+          {
+            $match: {
+              $and: [
+                { startDate: { $lte: new Date() } },
+                { endDate: { $gt: new Date() } },
+              ],
+            },
+          },
+          {
+            $match: {
+              $and: [
+                { 'originLocation.country': country },
+                { 'originLocation.state': state },
+              ],
+            },
+          },
+        ]);
+      case LocationFilterType.COUNTRY:
+        return this.eventModel.aggregate([
+          {
+            $match: { type: EventType.TIME_CONSTRAINED_EVENT },
+          },
+          {
+            $match: {
+              $and: [
+                { startDate: { $lte: new Date() } },
+                { endDate: { $gt: new Date() } },
+              ],
+            },
+          },
+          {
+            $match: {
+              'originLocation.country': locationFilterValue,
+            },
+          },
+        ]);
+      case LocationFilterType.STATE:
+        return this.eventModel.aggregate([
+          {
+            $match: { type: EventType.TIME_CONSTRAINED_EVENT },
+          },
+          {
+            $match: {
+              $and: [
+                { startDate: { $lte: new Date() } },
+                { endDate: { $gt: new Date() } },
+              ],
+            },
+          },
+          {
+            $match: {
+              'originLocation.state': locationFilterValue,
+            },
+          },
+        ]);
+    }
   }
 
   /***
@@ -141,6 +365,9 @@ export class EventsService {
     return events;
   }
 
+  /***
+   * Function to find quotes by categories
+   */
   async findQuoteByCategory(category: QuoteCategories): Promise<Event[]> {
     const events = this.eventModel.aggregate([
       {

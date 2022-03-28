@@ -11,3 +11,5 @@ export class CreatePostReqSwaggerDto extends PartialType(
   @ApiProperty()
   eventName: string;
 }
+
+export class CreatePostResSwaggerDto extends CreatePostDto {}

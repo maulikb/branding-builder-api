@@ -20,7 +20,9 @@ export class PostsService {
     private eventEmitter: EventEmitter2,
     private eventService: EventsService,
   ) {}
-
+  /***
+   * Function to create post and add reference in event
+   */
   async createPost(createPostDto: CreatePostDto, eventName: string) {
     const eventPost = await this.postModel.create(createPostDto);
     const event = await this.eventService.findEventByName(eventName);
@@ -54,15 +56,27 @@ export class PostsService {
     // if{ event.type === EventType.TIME_CONSTRAINED_EVENT
   }
 
+  /***
+   * Function to get all posts
+   */
   findAllPosts() {
     return this.postModel.find().exec();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} post`;
+  /***
+   * Function to get post by id
+   */
+  findPostByID(id: string) {
+    return this.postModel.findById(id);
   }
 
-  async update(id: string, updatePostDto: UpdatePostDto): Promise<EventPost> {
+  /***
+   * Function to update post
+   */
+  async updatePost(
+    id: string,
+    updatePostDto: UpdatePostDto,
+  ): Promise<EventPost> {
     const updatePost = await this.postModel.findByIdAndUpdate(
       id,
       { $set: updatePostDto },
@@ -71,6 +85,9 @@ export class PostsService {
     return updatePost;
   }
 
+  /***
+   * Function to delete post by id
+   */
   async deletePost(id: string) {
     this.eventEmitter.emit(PostEventType.DELETE_POST);
     this.postModel.remove(id);

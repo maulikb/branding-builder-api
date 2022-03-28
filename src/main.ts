@@ -10,6 +10,7 @@ import { environment } from './environments';
 import logger from './app/common/logger';
 import express from 'express';
 import path from 'path';
+import { VersioningType } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { logger });
@@ -18,12 +19,16 @@ async function bootstrap() {
   app.enableCors({
     origin: environment.allowedOrigins,
   });
+  app.enableVersioning({
+    type: VersioningType.URI,
+  });
   const config = new DocumentBuilder()
     .setTitle('Branding Builder API')
     .setDescription('Branding Builder Backend APIs')
     .setVersion('0.0')
     .build();
   const options: SwaggerDocumentOptions = {
+    ignoreGlobalPrefix: true,
     operationIdFactory: (controllerKey: string, methodKey: string) => methodKey,
   };
   const document = SwaggerModule.createDocument(app, config, options);

@@ -11,6 +11,8 @@ import {
 import { EventType } from '../@types/event-type';
 import { QuoteCategories } from '../@types/quote-categories';
 import { Transform } from 'class-transformer';
+import moment from 'moment';
+import logger from 'src/app/common/logger';
 export type EventDocument = Event & Document;
 
 const options = {
@@ -29,7 +31,7 @@ export class Event {
   @Prop({ required: true, type: String })
   @IsNotEmpty()
   @IsString()
-  @Transform((value) => value.toString().toLowerCase())
+  @Transform(({ value }) => value.toString().toLowerCase())
   @ApiProperty()
   name: string;
 
@@ -41,7 +43,7 @@ export class Event {
 
   @Prop({ required: true })
   @IsNotEmpty()
-  @Transform((value) => value.toString().toLowerCase())
+  @Transform(({ value }) => value.toString().toLowerCase())
   @ApiProperty()
   description: string;
 
@@ -56,20 +58,22 @@ export class Event {
   @ApiProperty()
   categories?: QuoteCategories;
 
-  @Prop()
-  @IsDateString()
+  @Prop({ type: Date })
   @IsOptional()
-  @ApiProperty()
+  @ApiProperty({ type: Date })
+  @Transform(({ value }) => moment(value, moment.ISO_8601).toDate())
   startDate?: Date;
 
-  @Prop()
-  @IsDateString()
+  @Prop({ type: Date })
   @IsOptional()
-  @ApiProperty()
+  @ApiProperty({ type: Date })
+  // @Transform((value) => new Date(value.value))
+  @Transform(({ value }) => moment(value, moment.ISO_8601).toDate())
   endDate?: Date;
 
   @Prop({ type: [SchemaTypes.Types.ObjectId], ref: 'EventPost' })
-  posts: Types.ObjectId[];
+  @IsOptional()
+  posts?: Types.ObjectId[];
 
   @Prop({ type: Object })
   @IsOptional()

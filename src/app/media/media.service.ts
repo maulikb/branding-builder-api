@@ -28,7 +28,7 @@ export class MediaService {
     }
     const pathToPublicTemp = path.join(__dirname, `${publicFolderPath}/temp`);
     await this.fileService.moveFileToDirectory(file.path, pathToPublicTemp);
-    const post = await this.postService.update(postId, {
+    const post = await this.postService.updatePost(postId, {
       backgroundImage: file.filename,
     });
     return post;

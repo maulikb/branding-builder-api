@@ -14,7 +14,7 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import path, { join } from 'path';
 import multer from 'multer';
-import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CustomHTTPException } from '../common/errors/custom-http.exception';
 import { ConfigService } from '@nestjs/config';
 import { CustomErrorCodes } from '../common/@types/custom-error-codes';
@@ -52,7 +52,7 @@ const imageFiter = (req, file, cb) => {
   }
 };
 
-@Controller('api/media/')
+@Controller({ path: 'api/', version: '1' })
 export class MediaController {
   private postAllowedExtentions: string;
   constructor(
@@ -68,8 +68,9 @@ export class MediaController {
       fileFilter: imageFiter,
     }),
   )
-  @Post('image')
+  @Post('upload-image')
   @ApiConsumes('multipart/form-data')
+  @ApiOperation({ summary: 'Upload Single Image And Update Post' })
   @ApiBody({
     schema: {
       type: 'object',
@@ -124,8 +125,12 @@ export class MediaController {
   //   });
   // }
 
+  /***
+   * Function to get image by name
+   */
   @Get('get-image/:IMAGE_NAME')
   @ApiTags('Media')
+  @ApiOperation({ summary: 'Get Image By Name' })
   findImage(
     @Param('IMAGE_NAME') imagename: string,
     @Res() res,
