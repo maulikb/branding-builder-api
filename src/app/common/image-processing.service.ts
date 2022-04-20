@@ -1,11 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
-import Jimp from 'jimp/*';
+import Jimp from 'jimp';
 import fs from 'fs';
 import { environment } from 'src/environments';
 import { CropType } from './@types/image-processing-types';
 import { JIMP_MAX_FILE_SIZE_FOR_PROCESSING_IN_MB } from './constants';
 import { FilePathService } from './file-path.service';
+import { FileService } from './file.service';
 
+const pathToSocialMediaIcon = '../../../public/social-media-icons';
 @Injectable()
 export class ImageProcessingService {
   private maxImageSize = environment.maxImageSize;
@@ -14,6 +16,7 @@ export class ImageProcessingService {
   constructor(
     private logger: Logger,
     private filePathService: FilePathService,
+    private fileService: FileService,
   ) {}
 
   public async processImageAndCache(
@@ -138,4 +141,10 @@ export class ImageProcessingService {
     );
     image.cover(w, h);
   }
+
+  // private async changeImageColor(imageName: string, color: string) {
+  //   const image = await Jimp.read(`${pathToSocialMediaIcon}/${imageName}`);
+  //   image.color([{ apply: 'red', params: [100] }]);
+  //   return image;
+  // }
 }

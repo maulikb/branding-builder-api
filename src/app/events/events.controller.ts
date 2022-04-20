@@ -49,7 +49,6 @@ export class EventsController {
   @Post('register-events')
   @ApiTags('Events')
   @ApiBody({ type: CreateEventReqSwagger })
-  @ApiConsumes('application/json')
   @ApiOperation({ summary: 'Register New Event' })
   @ApiResponse({ type: CreateEventResSwagger, status: HttpStatus.OK })
   @CommonApiResponses()

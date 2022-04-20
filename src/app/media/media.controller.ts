@@ -138,4 +138,11 @@ export class MediaController {
   ): Observable<Object> {
     return of(res.sendFile(join(process.cwd(), 'public/temp/' + imagename)));
   }
+
+  @Get('get-image/:IMAGE_NAME')
+  @ApiTags('Media')
+  @ApiOperation({ summary: 'Get Image By Name' })
+  changeIconColor(iconName: string, color: string) {
+    // return of(res.sendFile(join(process.cwd(), 'public/temp/' + imagename)));
+  }
 }

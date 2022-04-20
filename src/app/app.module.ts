@@ -15,7 +15,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import path from 'path';
 import { PostsModule } from './posts/posts.module';
 
-const publicFolderPath = '../../public/temp';
+const publicFolderPath = '../../public/';
 
 @Module({
   imports: [
@@ -35,7 +35,7 @@ const publicFolderPath = '../../public/temp';
     EventEmitterModule.forRoot(),
     ServeStaticModule.forRoot({
       rootPath: path.join(__dirname, publicFolderPath),
-      serveRoot: '/media/',
+      serveRoot: '/',
     }),
     EventsModule,
     CommonModule,

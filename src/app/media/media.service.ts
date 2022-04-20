@@ -4,6 +4,7 @@ import path from 'path';
 import { CustomErrorCodes } from '../common/@types/custom-error-codes';
 import { CustomHTTPException } from '../common/errors/custom-http.exception';
 import { FileService } from '../common/file.service';
+import { ImageProcessingService } from '../common/image-processing.service';
 import { PostsService } from '../posts/posts.service';
 const publicFolderPath = '../../../public';
 
@@ -26,14 +27,18 @@ export class MediaService {
         CustomErrorCodes.FILE_SIZE_IS_TOO_BIG,
       );
     }
-    const pathToPublicTemp = path.join(__dirname, `${publicFolderPath}/temp`);
+    const pathToPublicTemp = path.join(
+      __dirname,
+      `${publicFolderPath}/media/c`,
+    );
     await this.fileService.moveFileToDirectory(file.path, pathToPublicTemp);
+    const pathToFileFromMedia = `background-images/${file.filename}`;
     const post = await this.postService.updatePost(postId, {
-      backgroundImage: file.filename,
+      backgroundImage: pathToFileFromMedia,
     });
     return post;
   }
-
+  // public async changeImageColor(imageName: string, color: string) {}
   public async getFileByName(fileName: string) {
     const pathToFile = path.join(
       __dirname,

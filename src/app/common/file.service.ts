@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import fs from 'fs';
 import path from 'path';
+import glob from 'glob';
 
 @Injectable()
 export class FileService {
@@ -13,6 +14,17 @@ export class FileService {
     }
   }
 
+  public async findFilesWithWildcard(wildString: string): Promise<string[]> {
+    return new Promise<string[]>((resolve, reject) => {
+      glob(wildString, function (err, files) {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(files);
+        }
+      });
+    });
+  }
   public async moveFileToDirectory(
     source: string,
     destination: string,
