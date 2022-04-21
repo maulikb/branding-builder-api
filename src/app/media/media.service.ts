@@ -4,7 +4,6 @@ import path from 'path';
 import { CustomErrorCodes } from '../common/@types/custom-error-codes';
 import { CustomHTTPException } from '../common/errors/custom-http.exception';
 import { FileService } from '../common/file.service';
-import { ImageProcessingService } from '../common/image-processing.service';
 import { PostsService } from '../posts/posts.service';
 const publicFolderPath = '../../../public';
 
