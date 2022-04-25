@@ -1,5 +1,8 @@
 export enum QuoteCategories {
-  BUSINESS = 'business',
-  LOVE = 'love',
-  PERSONALITY = 'personality',
+  BUSINESS = 'BUSINESS',
+  LOVE = 'LOVE',
+  PERSONALITY = 'PERSONALITY',
+  MOTIVATION = 'MOTIVATION',
+  INVITATION = 'INVITATION',
+  SPORT = 'SPORT',
 }

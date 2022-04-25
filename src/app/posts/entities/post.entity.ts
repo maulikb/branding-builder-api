@@ -8,6 +8,7 @@ import {
   Matches,
   ValidateNested,
 } from 'class-validator';
+import { LocationType } from 'src/app/common/@types/location.type';
 import { COLOR_VALIDATION_RULE } from 'src/app/common/constants';
 import { PostSize } from '../@types/post-size';
 
@@ -29,39 +30,43 @@ export class EventPost {
   @IsNotEmpty()
   @IsString()
   @Matches(COLOR_VALIDATION_RULE)
-  @ApiProperty()
+  @ApiProperty({ type: String })
   primaryColor: string;
 
   @Prop({ required: true, type: String })
   @IsNotEmpty()
   @IsString()
   @Matches(COLOR_VALIDATION_RULE)
-  @ApiProperty()
+  @ApiProperty({ type: String })
   secondaryColor: string;
 
   @Prop({ type: String, nullable: true, default: '' })
-  @ApiProperty()
+  @ApiProperty({ type: String })
   backgroundImage?: string;
+
+  @Prop({ type: String, nullable: true, default: '' })
+  @ApiProperty({ type: String })
+  foregroundImage?: string;
+
+  @Prop({ type: Boolean })
+  @ApiProperty({ type: Boolean })
+  visibility?: boolean;
 
   @Prop({ required: true })
   @IsNotEmpty()
-  @ApiProperty()
+  @ApiProperty({ type: [String] })
   supportedLanguages: string[];
 
   @Prop({ type: PostSize })
   @ValidateNested()
-  @ApiProperty()
+  @ApiProperty({ type: PostSize })
   @Type(() => PostSize)
   postSize: PostSize;
 
-  @Prop({ type: Object })
+  @Prop({ type: LocationType })
   @IsOptional()
-  @ApiProperty()
-  celebrationLocation?: {
-    conuntry: string[];
-    state: string[];
-    city: string[];
-  };
+  @ApiProperty({ type: LocationType })
+  celebrationLocation?: LocationType;
 }
 
 export const EventPostSchema = SchemaFactory.createForClass(EventPost);

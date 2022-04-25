@@ -9,6 +9,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { EventsService } from './events.service';
+
 import {
   CreateEventDto,
   CreateEventReqSwagger,
@@ -50,9 +51,9 @@ export class EventsController {
   @ApiTags('Events')
   @ApiBody({ type: CreateEventReqSwagger })
   @ApiOperation({ summary: 'Register New Event' })
-  @ApiResponse({ type: CreateEventResSwagger, status: HttpStatus.OK })
+  @ApiResponse({ type: CreateEventReqSwagger, status: HttpStatus.OK })
   @CommonApiResponses()
-  async registerEvent(@Body() createEventDto: CreateEventDto) {
+  async registerEvent(@Body() createEventDto: CreateEventReqSwagger) {
     const event = await this.eventsService.createEvent(createEventDto);
     return event;
   }
@@ -145,17 +146,15 @@ export class EventsController {
   }
 
   /***
-   * Get All Events
+   * Get Events By Type
    */
   @Get('events')
   @ApiTags('Events')
-  @ApiOperation({ summary: 'Get All Events' })
+  @ApiOperation({ summary: 'Get Events By Type' })
   @ApiResponse({ type: CreateEventResSwagger, status: HttpStatus.OK })
   @CommonApiResponses()
   async getAllEvents(): Promise<Event[]> {
-    return await this.eventsService.findEventByType(
-      EventType.TIME_CONSTRAINED_EVENT,
-    );
+    return await this.eventsService.findTrendingEvent();
   }
 
   /***

@@ -11,6 +11,7 @@ import { UpdateQuoteEventDto } from './dto/update-quote.dto';
 import { Types } from 'mongoose';
 import { CommonUpdateEventDto } from './dto/common-even-update.dto';
 import { LocationFilterType } from './@types/location-filter-type';
+import mongoose from 'mongoose';
 
 @Injectable()
 export class EventsService {
@@ -346,6 +347,22 @@ export class EventsService {
    * Function to get as per event type
    */
   async findEventByType(eventType: EventType): Promise<Event[]> {
+    if (eventType === undefined) {
+      const events = this.eventModel.aggregate([
+        {
+          $lookup: {
+            from: 'eventposts',
+            localField: 'posts',
+            foreignField: '_id',
+            as: 'posts',
+          },
+        },
+        {
+          $unset: ['createdAt', 'updatedAt'],
+        },
+      ]);
+      return events;
+    }
     const events = this.eventModel.aggregate([
       {
         $match: { type: eventType },
@@ -365,6 +382,124 @@ export class EventsService {
     return events;
   }
 
+  async findTrendingEvent(): Promise<Event[]> {
+    const trendingEventPosts = this.eventModel.aggregate([
+      {
+        $match: {
+          type: 'TIME_CONSTRAINED_EVENT',
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          posts: 1,
+        },
+      },
+      {
+        $unwind: {
+          path: '$posts',
+          preserveNullAndEmptyArrays: false,
+        },
+      },
+      {
+        $project: {
+          posts: 1,
+          group: new mongoose.Types.ObjectId('6263a90f41213257f806b823'),
+        },
+      },
+      {
+        $group: {
+          _id: '$group',
+          tPosts: {
+            $push: '$posts',
+          },
+        },
+      },
+      {
+        $unionWith: {
+          coll: 'events',
+          pipeline: [
+            {
+              $match: {
+                type: 'ALL_TIME_EVENT',
+              },
+            },
+          ],
+        },
+      },
+      {
+        $group: {
+          _id: '$_id',
+          posts: {
+            $push: {
+              $cond: ['$tPosts', '$tPosts', '$posts'],
+            },
+          },
+        },
+      },
+      {
+        $unwind: {
+          path: '$posts',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
+          from: 'events',
+          localField: '_id',
+          foreignField: '_id',
+          as: 'event',
+        },
+      },
+      {
+        $unwind: {
+          path: '$event',
+        },
+      },
+      {
+        $project: {
+          'event.posts': 0,
+        },
+      },
+      {
+        $addFields: {
+          'event.posts': '$posts',
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          event: 1,
+          posts: 1,
+          originLocation: '$event.originLocation',
+          endDate: '$event.endDate',
+          startDate: '$event.startDate',
+          languages: '$event.languages',
+          createdAt: '$event.createdAt',
+          updatedAt: '$event.updatedAt',
+          description: '$event.description',
+          type: '$event.type',
+          name: '$event.name',
+          priority: '$event.priority',
+        },
+      },
+      {
+        $project: {
+          event: 0,
+        },
+      },
+      {
+        $lookup: {
+          from: 'eventposts',
+          localField: 'posts',
+          foreignField: '_id',
+          as: 'posts',
+        },
+      },
+    ]);
+    // allTimeEvents.posts += trendingEventPosts;
+    return trendingEventPosts;
+  }
   /***
    * Function to find quotes by categories
    */

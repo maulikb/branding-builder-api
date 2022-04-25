@@ -2,9 +2,9 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import { Types, Schema as SchemaTypes, Document } from 'mongoose';
 import {
-  IsDateString,
   IsEnum,
   IsNotEmpty,
+  IsNumber,
   IsOptional,
   IsString,
 } from 'class-validator';
@@ -12,7 +12,8 @@ import { EventType } from '../@types/event-type';
 import { QuoteCategories } from '../@types/quote-categories';
 import { Transform } from 'class-transformer';
 import moment from 'moment';
-import logger from 'src/app/common/logger';
+import { LocationType } from 'src/app/common/@types/location.type';
+
 export type EventDocument = Event & Document;
 
 const options = {
@@ -38,7 +39,7 @@ export class Event {
   @Prop({ required: true, type: String })
   @IsNotEmpty()
   @IsEnum(EventType)
-  @ApiProperty()
+  @ApiProperty({ type: 'string', enum: EventType })
   type: EventType;
 
   @Prop({ required: true })
@@ -46,6 +47,12 @@ export class Event {
   @Transform(({ value }) => value.toString().toLowerCase())
   @ApiProperty()
   description: string;
+
+  @Prop({ required: false })
+  @IsNumber()
+  @ApiProperty()
+  @IsOptional()
+  priority: number;
 
   @Prop({ type: [String], required: true })
   @IsNotEmpty()
@@ -75,13 +82,10 @@ export class Event {
   @IsOptional()
   posts?: Types.ObjectId[];
 
-  @Prop({ type: Object })
+  @Prop({ type: LocationType })
   @IsOptional()
-  @ApiProperty()
-  originLocation?: {
-    country: string[];
-    state: string[];
-  };
+  @ApiProperty({ type: LocationType })
+  originLocation?: LocationType;
 }
 
 export const EventSchema = SchemaFactory.createForClass(Event);

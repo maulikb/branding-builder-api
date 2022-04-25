@@ -1,0 +1,4 @@
+export enum ImageUploadType {
+  BACKGROUND_IMAGE = 'BACKGROUND_IMAGE',
+  FOREGROUND_IMAGE = 'FOREGROUND_IMAGE',
+}

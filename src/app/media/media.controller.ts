@@ -5,8 +5,11 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Logger,
+  LoggerService,
   Param,
   Post,
+  Query,
   Res,
   UploadedFile,
   UseInterceptors,
@@ -14,12 +17,22 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import path, { join } from 'path';
 import multer from 'multer';
-import { ApiBody, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Response } from 'express';
+import {
+  ApiBody,
+  ApiConsumes,
+  ApiOkResponse,
+  ApiOperation,
+  ApiQuery,
+  ApiTags,
+} from '@nestjs/swagger';
 import { CustomHTTPException } from '../common/errors/custom-http.exception';
 import { ConfigService } from '@nestjs/config';
 import { CustomErrorCodes } from '../common/@types/custom-error-codes';
 import { environment } from 'src/environments/';
 import { Observable, of } from 'rxjs';
+import { ImageUploadType } from './@types/image-uploading-type';
+import { TransformationInterceptor } from '../common/interceptors/transform.interceptor';
 
 const multerTemp = '../../../multer-store';
 
@@ -58,6 +71,7 @@ export class MediaController {
   constructor(
     private mediaService: MediaService,
     private configService: ConfigService,
+    private logger: Logger,
   ) {}
   /***
    * Handler to upload single image
@@ -80,6 +94,11 @@ export class MediaController {
           type: 'string',
           format: 'binary',
         },
+        imageUploadType: {
+          type: 'string',
+          enum: Object.values(ImageUploadType),
+        },
+        eventName: { type: 'string' },
       },
     },
   })
@@ -88,8 +107,15 @@ export class MediaController {
   async uploadFile(
     @UploadedFile() file: Express.Multer.File,
     @Body('postId') postId: string,
+    @Body('imageUploadType') imageUploadType: ImageUploadType,
+    @Body('eventName') eventName: string,
   ) {
-    return this.mediaService.uploadFile(file, postId);
+    return this.mediaService.uploadFile(
+      file,
+      postId,
+      imageUploadType,
+      eventName,
+    );
   }
 
   // /***
@@ -139,10 +165,37 @@ export class MediaController {
     return of(res.sendFile(join(process.cwd(), 'public/temp/' + imagename)));
   }
 
-  @Get('get-image/:IMAGE_NAME')
+  @Get('change-image-color/')
   @ApiTags('Media')
+  @ApiQuery({
+    name: 'IMAGE_NAME',
+    required: true,
+    type: String,
+  })
+  @ApiQuery({
+    name: 'REPLACE_COLOR',
+    required: true,
+    type: String,
+  })
   @ApiOperation({ summary: 'Get Image By Name' })
-  changeIconColor(iconName: string, color: string) {
-    // return of(res.sendFile(join(process.cwd(), 'public/temp/' + imagename)));
+  // @ApiOkResponse({ content: { 'image/png': {} } })
+  // @UseInterceptors(TransformationInterceptor)
+  async changeIconColor(
+    @Query('IMAGE_NAME') imageName: string,
+    @Query('REPLACE_COLOR') replaceColor: string,
+    @Res() res: Response,
+    // eslint-disable-next-line @typescript-eslint/ban-types
+  ): Promise<Object> {
+    const updatedImagePath = await this.mediaService.changeImageColor(
+      imageName,
+      replaceColor,
+    );
+    this.logger.debug(updatedImagePath);
+
+    // return of(res.sendFile(updatedImagePath));
+
+    // return of(res.type('png').send(updatedImagePath));
+    return of(res.sendFile(updatedImagePath));
+    // return res.headers();
   }
 }

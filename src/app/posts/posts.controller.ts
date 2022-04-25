@@ -12,6 +12,7 @@ import {
 import { PostsService } from './posts.service';
 import {
   CreatePostDto,
+  CreatePostReqDto,
   CreatePostReqSwaggerDto,
   CreatePostResSwaggerDto,
 } from './dto/create-post.dto';
@@ -33,10 +34,10 @@ export class PostsController {
   @ApiResponse({ type: CreatePostResSwaggerDto, status: HttpStatus.OK })
   @CommonApiResponses()
   async registerPost(
-    @Body() createPostDto: CreatePostDto,
+    @Body() createPostReqDto: CreatePostReqDto,
     @Body('eventName') eventName: string,
   ) {
-    return this.postsService.createPost(createPostDto, eventName);
+    return this.postsService.createPost(createPostReqDto, eventName);
   }
 
   /***

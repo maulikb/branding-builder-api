@@ -1,6 +1,5 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { EventPostDocument } from './entities/post.entity';
 import { Model } from 'mongoose';
@@ -12,6 +11,7 @@ import { CustomHTTPException } from '../common/errors/custom-http.exception';
 import { CustomErrorCodes } from '../common/@types/custom-error-codes';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PostEventType } from './@types/posts-event-type';
+import { CreatePostReqDto } from './dto/create-post.dto';
 @Injectable()
 export class PostsService {
   constructor(
@@ -23,8 +23,8 @@ export class PostsService {
   /***
    * Function to create post and add reference in event
    */
-  async createPost(createPostDto: CreatePostDto, eventName: string) {
-    const eventPost = await this.postModel.create(createPostDto);
+  async createPost(createPostReqDto: CreatePostReqDto, eventName: string) {
+    const eventPost = await this.postModel.create(createPostReqDto);
     const event = await this.eventService.findEventByName(eventName);
     if (event === null) {
       throw new CustomHTTPException(
